@@ -92,7 +92,7 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
 
     // Normal Chat Logic
     try {
-      const response = await fetch(`http://127.0.0.1:8001/query?q=${encodeURIComponent(textToProcess)}`);
+      const response = await fetch(`https://roman-production.up.railway.app/query?q=${encodeURIComponent(textToProcess)}`);
       const data = await response.json();
       addBotMessage(data.response);
     } catch (error) {

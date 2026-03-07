@@ -5,7 +5,7 @@ export default function TourView() {
   const [config, setConfig] = useState(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8001/tour-config')
+    fetch('https://roman-production.up.railway.app/tour-config')
       .then(res => res.json())
       .then(data => setConfig(data))
       .catch(err => console.error("Error loading tour config", err));
@@ -29,7 +29,7 @@ export default function TourView() {
               height="100%"
               controls
               autoPlay
-              src={`http://127.0.0.1:8001${videoUrl}`}
+              src={`https://roman-production.up.railway.app${videoUrl}`}
             >
               Your browser does not support the video tag.
             </video>
