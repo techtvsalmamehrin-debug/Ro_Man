@@ -47,8 +47,21 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
     };
   }, []);
 
-  // Text-to-Speech (Robotic Voice)
+  // Text-to-Speech (Robotic Voice) with Cloud Fallback
   const speak = (text) => {
+    const playCloudFallback = (textToSpeak) => {
+      try {
+        // Fallback to Google Translate's free TTS API
+        // We encode the text and limit it (Google TTS has a ~200 char limit per request, but good enough for short replies)
+        const safeText = textToSpeak.substring(0, 200);
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(safeText)}`;
+        const audio = new Audio(url);
+        audio.play().catch(e => console.error("Cloud TTS Playback failed:", e));
+      } catch (err) {
+        console.error("Audio fallback failed", err);
+      }
+    };
+
     if ('speechSynthesis' in window) {
       // Force resume the synthesis engine (crucial for some Android/Chrome versions)
       window.speechSynthesis.resume();
@@ -72,20 +85,30 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
           if (preferredVoice) {
             utterance.voice = preferredVoice;
           }
+          window.speechSynthesis.speak(utterance);
+        } else {
+          // If voices STILL empty after waiting, use cloud fallback
+          playCloudFallback(text);
         }
-        window.speechSynthesis.speak(utterance);
       };
 
       // In some Android browsers, getVoices() is empty initially and loads async
       if (window.speechSynthesis.getVoices().length === 0) {
         window.speechSynthesis.addEventListener('voiceschanged', setVoiceAndSpeak, { once: true });
-        // Fallback speak if voiceschanged never fires
+        // Fallback speak if voiceschanged never fires or voices are truly missing
         setTimeout(() => {
-          if (window.speechSynthesis.getVoices().length === 0) setVoiceAndSpeak();
+          if (window.speechSynthesis.getVoices().length === 0) {
+            playCloudFallback(text);
+          } else {
+            setVoiceAndSpeak();
+          }
         }, 1000);
       } else {
         setVoiceAndSpeak();
       }
+    } else {
+      // Browser doesn't support SpeechSynthesis at all
+      playCloudFallback(text);
     }
   };
 
