@@ -86,13 +86,6 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
   };
 
   const processInput = async (manualInput = null) => {
-    // Prime the speech synthesis engine on direct user interaction 
-    // This fixes the issue on mobile devices (phones/tablets) where audio is blocked after async fetch
-    if ('speechSynthesis' in window) {
-      const primeUtterance = new SpeechSynthesisUtterance('');
-      primeUtterance.volume = 0;
-      window.speechSynthesis.speak(primeUtterance);
-    }
 
     const textToProcess = manualInput || input;
     if (!textToProcess.trim()) return;
@@ -138,7 +131,17 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && processInput()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              // Trigger dummy speech synchronously on user gesture
+              if ('speechSynthesis' in window) {
+                const primeUtterance = new SpeechSynthesisUtterance('');
+                primeUtterance.volume = 0;
+                window.speechSynthesis.speak(primeUtterance);
+              }
+              processInput();
+            }
+          }}
           placeholder="Type your question..."
           className="chat-input"
         />
@@ -149,7 +152,18 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
         >
           {isListening ? '🔴' : '🎤'}
         </button>
-        <button onClick={() => processInput()} className="send-btn btn-primary">
+        <button
+          onClick={() => {
+            // Trigger dummy speech synchronously on user gesture
+            if ('speechSynthesis' in window) {
+              const primeUtterance = new SpeechSynthesisUtterance('');
+              primeUtterance.volume = 0;
+              window.speechSynthesis.speak(primeUtterance);
+            }
+            processInput();
+          }}
+          className="send-btn btn-primary"
+        >
           Send
         </button>
       </div>
