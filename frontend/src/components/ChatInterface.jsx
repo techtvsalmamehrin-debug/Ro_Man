@@ -25,6 +25,28 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
     }
   }, [initialQuery]);
 
+  // Force initialize speech synthesis on mobile platforms
+  const initializeAudio = () => {
+    if ('speechSynthesis' in window) {
+      const initUtterance = new SpeechSynthesisUtterance('');
+      initUtterance.volume = 0;
+      window.speechSynthesis.speak(initUtterance);
+      // Remove listener once initialized
+      document.removeEventListener('click', initializeAudio);
+      document.removeEventListener('touchstart', initializeAudio);
+    }
+  };
+
+  useEffect(() => {
+    // Attach listener to first interaction anywhere on the document
+    document.addEventListener('click', initializeAudio);
+    document.addEventListener('touchstart', initializeAudio);
+    return () => {
+      document.removeEventListener('click', initializeAudio);
+      document.removeEventListener('touchstart', initializeAudio);
+    };
+  }, []);
+
   // Text-to-Speech (Robotic Voice)
   const speak = (text) => {
     if ('speechSynthesis' in window) {
