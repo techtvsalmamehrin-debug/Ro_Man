@@ -50,24 +50,42 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
   // Text-to-Speech (Robotic Voice)
   const speak = (text) => {
     if ('speechSynthesis' in window) {
+      // Force resume the synthesis engine (crucial for some Android/Chrome versions)
+      window.speechSynthesis.resume();
       window.speechSynthesis.cancel(); // Stop any previous speech
+
       const utterance = new SpeechSynthesisUtterance(text);
-
-      // Ensure voices are loaded (helps on some mobile devices)
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        // Find an English voice
-        const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-        const preferredVoice = englishVoices.find(v => v.name.includes('Male') || v.name.includes('UK') || v.name.includes('English')) || englishVoices[0];
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
-        }
-      }
-
       utterance.pitch = 0.6; // Lower pitch for robot effect
       utterance.rate = 0.9;  // Slightly mechanical speed
       utterance.volume = 1;  // Ensure volume is maximum
-      window.speechSynthesis.speak(utterance);
+
+      const setVoiceAndSpeak = () => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          // Fallback order: Male -> UK/English -> Any English -> First Available -> Default
+          const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+          const preferredVoice = englishVoices.find(v => v.name.includes('Male')) ||
+            englishVoices.find(v => v.name.includes('UK') || v.name.includes('English')) ||
+            englishVoices[0] ||
+            voices[0];
+
+          if (preferredVoice) {
+            utterance.voice = preferredVoice;
+          }
+        }
+        window.speechSynthesis.speak(utterance);
+      };
+
+      // In some Android browsers, getVoices() is empty initially and loads async
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.addEventListener('voiceschanged', setVoiceAndSpeak, { once: true });
+        // Fallback speak if voiceschanged never fires
+        setTimeout(() => {
+          if (window.speechSynthesis.getVoices().length === 0) setVoiceAndSpeak();
+        }, 1000);
+      } else {
+        setVoiceAndSpeak();
+      }
     }
   };
 
