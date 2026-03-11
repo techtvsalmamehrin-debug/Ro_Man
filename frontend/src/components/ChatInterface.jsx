@@ -30,8 +30,21 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel(); // Stop any previous speech
       const utterance = new SpeechSynthesisUtterance(text);
+
+      // Ensure voices are loaded (helps on some mobile devices)
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        // Find an English voice
+        const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+        const preferredVoice = englishVoices.find(v => v.name.includes('Male') || v.name.includes('UK') || v.name.includes('English')) || englishVoices[0];
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+      }
+
       utterance.pitch = 0.6; // Lower pitch for robot effect
       utterance.rate = 0.9;  // Slightly mechanical speed
+      utterance.volume = 1;  // Ensure volume is maximum
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -73,6 +86,14 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
   };
 
   const processInput = async (manualInput = null) => {
+    // Prime the speech synthesis engine on direct user interaction 
+    // This fixes the issue on mobile devices (phones/tablets) where audio is blocked after async fetch
+    if ('speechSynthesis' in window) {
+      const primeUtterance = new SpeechSynthesisUtterance('');
+      primeUtterance.volume = 0;
+      window.speechSynthesis.speak(primeUtterance);
+    }
+
     const textToProcess = manualInput || input;
     if (!textToProcess.trim()) return;
 
