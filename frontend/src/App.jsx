@@ -5,12 +5,13 @@ import TourView from './components/TourView'
 import FormView from './components/FormView'
 import AdminView from './components/AdminView'
 import AboutRoman from './components/AboutRoman'
+import GreetingPage from './components/GreetingPage'
 
 function App() {
   const queryParams = new URLSearchParams(window.location.search);
   const isAdminViewable = queryParams.get('dev') === 'true' || queryParams.get('admin') === 'portal';
 
-  const [activeView, setActiveView] = useState(isAdminViewable ? 'admin' : 'home'); // home, chat, tour, form, admin
+  const [activeView, setActiveView] = useState(isAdminViewable ? 'admin' : 'greeting'); // greeting, home, chat, tour, form, admin
   const [initialQuery, setInitialQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
 
@@ -60,6 +61,12 @@ function App() {
 
       {/* Main Content Area */}
       <main className="main-content">
+        {activeView === 'greeting' && (
+          <div className="flex-center" style={{ width: '100%', height: '100%' }}>
+            <GreetingPage navigateTo={setActiveView} />
+          </div>
+        )}
+
         {activeView === 'home' && (
           <div className="hero-section">
             <div className="robot-avatar-container">
