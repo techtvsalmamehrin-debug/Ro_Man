@@ -88,7 +88,7 @@ export default function FormView({ navigateTo }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('https://roman-production.up.railway.app/visitor', {
+            const response = await fetch('https://ro-man.onrender.com/visitor', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

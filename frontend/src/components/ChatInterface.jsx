@@ -170,7 +170,7 @@ export default function ChatInterface({ initialQuery, clearInitialQuery, navigat
     // Normal Chat Logic
     try {
       const response = await fetch(`https://ro-man.onrender.com/query?q=${encodeURIComponent(textToProcess)}`);
-      //const response = await fetch(`https://roman-production.up.railway.app/query?q=${encodeURIComponent(textToProcess)}`);
+      
       const data = await response.json();
       addBotMessage(data.response);
     } catch (error) {

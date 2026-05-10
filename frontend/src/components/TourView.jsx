@@ -5,7 +5,7 @@ export default function TourView() {
   const [config, setConfig] = useState(null);
 
   useEffect(() => {
-    fetch('https://roman-production.up.railway.app/tour-config')
+    fetch('https://ro-man.onrender.com/tour-config')
       .then(res => res.json())
       .then(data => setConfig(data))
       .catch(err => console.error("Error loading tour config", err));
